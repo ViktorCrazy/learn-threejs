@@ -13,14 +13,25 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Create a cube geometry
-const geometry = new THREE.BoxGeometry();
-
-// Create a material with a default color
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-
-// Create the mesh
-const cube = new THREE.Mesh(geometry, material);
+const cubeGeometry = new THREE.BoxGeometry();
+const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+cube.position.x = -2; // Position the cube
 scene.add(cube);
+
+// Create a sphere geometry
+const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+sphere.position.x = 2; // Position the sphere
+scene.add(sphere);
+
+// Create a cone geometry
+const coneGeometry = new THREE.ConeGeometry(0.5, 1, 32);
+const coneMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+cone.position.y = -2; // Position the cone
+scene.add(cone);
 
 // Initialize the raycaster and mouse vector
 const raycaster = new THREE.Raycaster();
@@ -36,18 +47,20 @@ function onMouseMove(event) {
     // Update the raycaster with the camera and mouse position
     raycaster.setFromCamera(mouse, camera);
 
-    // Check for intersections with the cube
-    const intersects = raycaster.intersectObject(cube);
+    // Check for intersections with the objects
+    const intersects = raycaster.intersectObjects([cube, sphere, cone]);
 
-    // If there's an intersection, change the cube's color
+    // If there's an intersection, change the color of the intersected object
     if (intersects.length > 0) {
-        if (INTERSECTED !== cube) {
-            if (INTERSECTED) INTERSECTED.material.color.set(0x00ff00); // Reset previous object color
-            INTERSECTED = cube;
+        const object = intersects[0].object;
+        if (INTERSECTED !== object) {
+            if (INTERSECTED) INTERSECTED.material.color.set(INTERSECTED.originalColor); // Reset previous object color
+            INTERSECTED = object;
+            INTERSECTED.originalColor = INTERSECTED.material.color.getHex(); // Store the original color
             INTERSECTED.material.color.set(0xff0000); // Change to red
         }
     } else {
-        if (INTERSECTED) INTERSECTED.material.color.set(0x00ff00); // Reset color when not hovering
+        if (INTERSECTED) INTERSECTED.material.color.set(INTERSECTED.originalColor); // Reset color when not hovering
         INTERSECTED = null;
     }
 }
