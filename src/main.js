@@ -12,7 +12,7 @@ document.body.appendChild(renderer.domElement);
 
 // Set up Cannon.js world
 let world = new CANNON.World();
-world.gravity.set(0, -9.82, 0)
+world.gravity.set(0, 0, 0)
 
 // Create the cube as the vehicle body (in Three.js)
 let vehicleGeometry = new THREE.BoxGeometry(2, 1, 4);
@@ -35,21 +35,21 @@ vehicleBody.position.z = vehicleMesh.position.z
 world.addBody(vehicleBody)
 
 // Create a ground (plane) in Three.js
-let groundGeometry = new THREE.PlaneGeometry(500, 500);
-let groundMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
-let groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-groundMesh.rotation.x = -Math.PI / 2;
-groundMesh.position.y = -1;
-scene.add(groundMesh);
+// let groundGeometry = new THREE.PlaneGeometry(500, 500);
+// let groundMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
+// let groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+// groundMesh.rotation.x = -Math.PI / 2;
+// groundMesh.position.y = -1;
+// scene.add(groundMesh);
 
-// Create a ground (plane) in Cannon.js
-let groundShape = new CANNON.Plane();
-let groundBody = new CANNON.Body({
-    mass: 0  // Static body
-});
-groundBody.addShape(groundShape);
-groundBody.position.y = -1;
-world.addBody(groundBody);
+// // Create a ground (plane) in Cannon.js
+// let groundShape = new CANNON.Plane();
+// let groundBody = new CANNON.Body({
+//     mass: 0  // Static body
+// });
+// groundBody.addShape(groundShape);
+// groundBody.position.y = -1;
+// world.addBody(groundBody);
 
 // Set up controls (WASD)
 let controls = { forward: false, backward: false, left: false, right: false };
@@ -116,7 +116,7 @@ function animate() {
     vehicleMesh.quaternion.set(vehicleBody.quaternion.x, vehicleBody.quaternion.y, vehicleBody.quaternion.z, vehicleBody.quaternion.w);
 
     // Update the vehicle based on controls
-    // updateVehicle();
+    updateVehicle();
 
     // Update target camera position based on vehicle position and offset
     targetPosition.set(vehicleBody.position.x, vehicleBody.position.y, vehicleBody.position.z).add(cameraOffset);
@@ -130,7 +130,7 @@ function animate() {
 
     // Render positions for debug
     ctx.fillText(`Vehicle Position: (${vehicleMesh.position.x.toFixed(2)}, ${vehicleMesh.position.y.toFixed(2)}, ${vehicleMesh.position.z.toFixed(2)})`, 10, 30);
-    ctx.fillText(`Ground Position: (${groundMesh.position.x.toFixed(2)}, ${groundMesh.position.y.toFixed(2)}, ${groundMesh.position.z.toFixed(2)})`, 10, 50);
+    // ctx.fillText(`Ground Position: (${groundMesh.position.x.toFixed(2)}, ${groundMesh.position.y.toFixed(2)}, ${groundMesh.position.z.toFixed(2)})`, 10, 50);
 
     // Render the scene
     renderer.render(scene, camera);
