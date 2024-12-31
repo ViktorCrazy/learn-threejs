@@ -37,7 +37,7 @@ let world = new CANNON.World();
 world.gravity.set(0, -9.82, 0)
 
 // Create the cube as the vehicle body (in Three.js)
-let vehicleGeometry = new THREE.BoxGeometry(2, 1, 4);
+let vehicleGeometry = new THREE.BoxGeometry(1, 1, 1);
 let vehicleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 let vehicleMesh = new THREE.Mesh(vehicleGeometry, vehicleMaterial);
 vehicleMesh.position.x = 0
@@ -52,7 +52,7 @@ scene.add(vehicleMesh);
 // cubeMesh.castShadow = true
 // scene.add(cubeMesh)
 const vehicleShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
-const vehicleBody = new CANNON.Body({ mass: 1 })
+const vehicleBody = new CANNON.Body({ mass: 10 })
 vehicleBody.addShape(vehicleShape)
 vehicleBody.position.x = vehicleMesh.position.x
 vehicleBody.position.y = vehicleMesh.position.y
