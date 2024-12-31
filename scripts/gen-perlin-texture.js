@@ -32,7 +32,7 @@ for (let i = 0; i < width * height; i++) {
 ctx.putImageData(imageData, 0, 0);
 
 // Save the canvas as a PNG file
-const out = fs.createWriteStream(__dirname + '/procedural_texture.png');
+const out = fs.createWriteStream(__dirname + '/generated/procedural_texture.png');
 const stream = canvas.createPNGStream();
 stream.pipe(out);
 out.on('finish', () => {
