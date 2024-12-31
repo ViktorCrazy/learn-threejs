@@ -81,6 +81,19 @@ let cameraOffset = new THREE.Vector3(0, 5, 10); // Camera offset behind the vehi
 let cameraSmoothness = 0.1; // How fast the camera follows (0 = instant, 1 = very slow)
 let targetPosition = new THREE.Vector3(); // Target position for the camera
 
+// Create a canvas overlay for debug info
+let canvas = document.createElement('canvas');
+canvas.style.position = 'absolute';
+canvas.style.top = '0';
+canvas.style.left = '0';
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+document.body.appendChild(canvas);
+
+let ctx = canvas.getContext('2d');
+ctx.font = '16px Arial';
+ctx.fillStyle = 'white';
+
 // Set up the animation loop
 function animate() {
     requestAnimationFrame(animate);
@@ -101,6 +114,13 @@ function animate() {
     // Smoothly interpolate camera position towards target position
     camera.position.lerp(targetPosition, cameraSmoothness);
     camera.lookAt(vehicleMesh.position);
+
+    // Clear the canvas and render the positions of the objects
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Render positions for debug
+    ctx.fillText(`Vehicle Position: (${vehicleMesh.position.x.toFixed(2)}, ${vehicleMesh.position.y.toFixed(2)}, ${vehicleMesh.position.z.toFixed(2)})`, 10, 30);
+    ctx.fillText(`Ground Position: (${groundMesh.position.x.toFixed(2)}, ${groundMesh.position.y.toFixed(2)}, ${groundMesh.position.z.toFixed(2)})`, 10, 50);
 
     // Render the scene
     renderer.render(scene, camera);
