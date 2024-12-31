@@ -1,3 +1,5 @@
+import * as THREE from 'three'
+
 // Initialize the scene
 const scene = new THREE.Scene();
 
@@ -23,9 +25,10 @@ scene.add(cube);
 // Initialize the raycaster and mouse vector
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
+let INTERSECTED = null;
 
-// Update the mouse position on click
-function onMouseClick(event) {
+// Update the mouse position on mouse move
+function onMouseMove(event) {
     // Convert mouse coordinates to normalized device coordinates (-1 to +1)
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -38,12 +41,19 @@ function onMouseClick(event) {
 
     // If there's an intersection, change the cube's color
     if (intersects.length > 0) {
-        cube.material.color.set(0xff0000); // Change to red
+        if (INTERSECTED !== cube) {
+            if (INTERSECTED) INTERSECTED.material.color.set(0x00ff00); // Reset previous object color
+            INTERSECTED = cube;
+            INTERSECTED.material.color.set(0xff0000); // Change to red
+        }
+    } else {
+        if (INTERSECTED) INTERSECTED.material.color.set(0x00ff00); // Reset color when not hovering
+        INTERSECTED = null;
     }
 }
 
-// Add the click event listener
-window.addEventListener('click', onMouseClick, false);
+// Add the mouse move event listener
+window.addEventListener('mousemove', onMouseMove, false);
 
 // Animation loop
 function animate() {
