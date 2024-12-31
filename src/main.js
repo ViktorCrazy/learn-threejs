@@ -34,45 +34,62 @@ document.body.appendChild(renderer.domElement);
 
 // Set up Cannon.js world
 let world = new CANNON.World();
-world.gravity.set(0, -9.82, 0)
+world.gravity.set(0, -9.82, 0);
 
 // Create the cube as the vehicle body (in Three.js)
 let vehicleGeometry = new THREE.BoxGeometry(1, 1, 1);
-let vehicleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+let vehicleMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Initially blue
 let vehicleMesh = new THREE.Mesh(vehicleGeometry, vehicleMaterial);
-vehicleMesh.position.x = 0
-vehicleMesh.position.y = 1
-vehicleMesh.castShadow = true
+vehicleMesh.position.x = 0;
+vehicleMesh.position.y = 1;
+vehicleMesh.castShadow = true;
 scene.add(vehicleMesh);
 
-// const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
-// const cubeMesh = new THREE.Mesh(cubeGeometry, vehicleMaterial)
-// cubeMesh.position.x = -3
-// cubeMesh.position.y = 3
-// cubeMesh.castShadow = true
-// scene.add(cubeMesh)
-const vehicleShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
-const vehicleBody = new CANNON.Body({ mass: 10 })
-vehicleBody.addShape(vehicleShape)
-vehicleBody.position.x = vehicleMesh.position.x
-vehicleBody.position.y = vehicleMesh.position.y
-vehicleBody.position.z = vehicleMesh.position.z
-world.addBody(vehicleBody)
+// Create a shape and body for the cube in Cannon.js
+const vehicleShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
+const vehicleBody = new CANNON.Body({ mass: 10 });
+vehicleBody.addShape(vehicleShape);
+vehicleBody.position.x = vehicleMesh.position.x;
+vehicleBody.position.y = vehicleMesh.position.y;
+vehicleBody.position.z = vehicleMesh.position.z;
+world.addBody(vehicleBody);
+
+// Create ground plane in Three.js
+const planeGeometry = new THREE.PlaneGeometry(25, 25);
+const planeMesh = new THREE.Mesh(planeGeometry, new THREE.MeshPhongMaterial());
+planeMesh.rotateX(-Math.PI / 2);
+planeMesh.receiveShadow = true;
+scene.add(planeMesh);
+
+// Create ground body in Cannon.js
+const planeShape = new CANNON.Plane();
+const planeBody = new CANNON.Body({ mass: 0 });
+planeBody.addShape(planeShape);
+planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+world.addBody(planeBody);
+
+// Variable to track if the cube is in contact with the ground
+let isTouchingGround = false;
+
+// Set up collision detection
+vehicleBody.addEventListener('collide', (event) => {
+    if (event.body === planeBody) {
+        isTouchingGround = true; // Cube is touching the ground
+        vehicleMesh.material.color.set(0x00ff00); // Change color to green when touching the ground
+    }
+});
+
+// When the cube stops colliding, make it blue again
+vehicleBody.addEventListener('collideend', (event) => {
+
+    console.log("collideend")
 
 
-const phongMaterial = new THREE.MeshPhongMaterial()
-
-// Create a ground (plane) in Three.js
-const planeGeometry = new THREE.PlaneGeometry(25, 25)
-const planeMesh = new THREE.Mesh(planeGeometry, phongMaterial)
-planeMesh.rotateX(-Math.PI / 2)
-planeMesh.receiveShadow = true
-scene.add(planeMesh)
-const planeShape = new CANNON.Plane()
-const planeBody = new CANNON.Body({ mass: 0 })
-planeBody.addShape(planeShape)
-planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
-world.addBody(planeBody)
+    if (event.body === planeBody) {
+        isTouchingGround = false; // Cube is no longer touching the ground
+        vehicleMesh.material.color.set(0x0000ff); // Change color back to blue
+    }
+});
 
 // Set up controls (WASD)
 let controls = { forward: false, backward: false, left: false, right: false };
@@ -123,16 +140,16 @@ let ctx = canvas.getContext('2d');
 ctx.font = '16px Arial';
 ctx.fillStyle = 'white';
 
-const clock = new THREE.Clock()
-let delta
+const clock = new THREE.Clock();
+let delta;
 
 // Set up the animation loop
 function animate() {
     requestAnimationFrame(animate);
 
     // Update physics world
-    delta = Math.min(clock.getDelta(), 0.1)
-    world.step(delta)
+    delta = Math.min(clock.getDelta(), 0.1);
+    world.step(delta);
 
     // Sync Three.js vehicle position and rotation with Cannon.js vehicle body
     vehicleMesh.position.set(vehicleBody.position.x, vehicleBody.position.y, vehicleBody.position.z);
@@ -153,7 +170,6 @@ function animate() {
 
     // Render positions for debug
     ctx.fillText(`Vehicle Position: (${vehicleMesh.position.x.toFixed(2)}, ${vehicleMesh.position.y.toFixed(2)}, ${vehicleMesh.position.z.toFixed(2)})`, 10, 30);
-    // ctx.fillText(`Ground Position: (${groundMesh.position.x.toFixed(2)}, ${groundMesh.position.y.toFixed(2)}, ${groundMesh.position.z.toFixed(2)})`, 10, 50);
 
     // Render the scene
     renderer.render(scene, camera);
@@ -162,11 +178,10 @@ function animate() {
 // Start the animation loop
 animate();
 
-
-window.addEventListener('resize', onWindowResize, false)
+window.addEventListener('resize', onWindowResize, false);
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    render()
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    render();
 }
