@@ -1,72 +1,88 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
-import { Demo } from "./utils/cannon/demo";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const demo = new Demo();
-const size = 1.0;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 10, 20);
 
-demo.addScene("Friction", () => {
-    const shape = new CANNON.Box(new CANNON.Vec3(size, size, size));
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    // Create world
-    const world = demo.getWorld();
-    world.broadphase = new CANNON.NaiveBroadphase();
-    world.iterations = 10;
+// Lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
 
-    // Materials
-    const groundMaterial = new CANNON.Material("groundMaterial");
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 10, 10);
+scene.add(directionalLight);
 
-    // Adjust constraint equation parameters for ground/ground contact
-    const ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
-        friction: 0.4,
-        restitution: 0.3,
-        contactEquationStiffness: 1e8,
-        contactEquationRelaxation: 3,
-        frictionEquationStiffness: 1e8,
-        frictionEquationRegularizationTime: 3,
-    });
-
-    // Add contact material to the world
-    world.addContactMaterial(ground_ground_cm);
-
-    // Ground plane
-    const groundShape = new CANNON.Plane();
-    const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
-    groundBody.addShape(groundShape);
-    world.add(groundBody);
-    demo.addVisual(groundBody);
-
-    // Create a slippery material (friction coefficient = 0.0)
-    const slipperyMaterial = new CANNON.Material("slipperyMaterial");
-
-    // The ContactMaterial defines what happens when two materials meet.
-    // In this case, we want a friction coefficient of 0.0 when the slippery material touches the ground.
-    const slippery_ground_cm = new CANNON.ContactMaterial(groundMaterial, slipperyMaterial, {
-        friction: 0,
-        restitution: 0.3,
-        contactEquationStiffness: 1e8,
-        contactEquationRelaxation: 3,
-    });
-
-    // We must add the contact materials to the world
-    world.addContactMaterial(slippery_ground_cm);
-
-    // Create slippery box
-    const boxBody = new CANNON.Body({ mass: 1, material: slipperyMaterial });
-    boxBody.addShape(shape);
-    boxBody.position.set(0, 0, 5);
-    world.add(boxBody);
-    demo.addVisual(boxBody);
-
-    // Create box made of groundMaterial
-    const boxBody2 = new CANNON.Body({ mass: 10, material: groundMaterial });
-    boxBody2.addShape(shape);
-    boxBody2.position.set(size * 4, 0, 5);
-    world.add(boxBody2);
-    demo.addVisual(boxBody2);
-
-    // Change gravity so the boxes will slide along the x-axis
-    world.gravity.set(-3, 0, -60);
+// Materials
+const groundMaterial = new THREE.MeshStandardMaterial({
+    color: 0x228b22,
+    roughness: 0.8,
+    metalness: 0.3,
 });
 
-demo.start();
+const slipperyMaterial = new THREE.MeshStandardMaterial({
+    color: 0x87ceeb,
+    roughness: 0.0,
+    metalness: 0.5,
+});
+
+const boxMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff6347,
+    roughness: 0.4,
+    metalness: 0.5,
+});
+
+// Ground Plane
+const groundGeometry = new THREE.PlaneGeometry(50, 50);
+const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+groundMesh.rotation.x = -Math.PI / 2;
+scene.add(groundMesh);
+
+// Boxes
+const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+
+// Slippery Box
+const slipperyBox = new THREE.Mesh(boxGeometry, slipperyMaterial);
+slipperyBox.position.set(0, 1, 5);
+scene.add(slipperyBox);
+
+// Box with ground-like material
+const groundBox = new THREE.Mesh(boxGeometry, boxMaterial);
+groundBox.position.set(8, 1, 5);
+scene.add(groundBox);
+
+// Add gravity-like animation
+const gravity = new THREE.Vector3(0, -9.8, 0);
+let slipperyVelocity = new THREE.Vector3(-1, 0, 0); // initial velocity along x-axis
+let groundBoxVelocity = new THREE.Vector3(-0.5, 0, 0);
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Apply pseudo-gravity
+    if (slipperyBox.position.y > 0.5) {
+        slipperyVelocity.addScaledVector(gravity, 0.01); // reduce Y
+    }
+    if (groundBox.position.y > 0.5) {
+        groundBoxVelocity.addScaledVector(gravity, 0.01); // reduce Y
+    }
+
+    // Update positions
+    slipperyBox.position.addScaledVector(slipperyVelocity, 0.1);
+    groundBox.position.addScaledVector(groundBoxVelocity, 0.1);
+
+    // Stop boxes on the ground
+    if (slipperyBox.position.y <= 0.5) slipperyVelocity.y = 0;
+    if (groundBox.position.y <= 0.5) groundBoxVelocity.y = 0;
+
+    renderer.render(scene, camera);
+}
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+animate();
