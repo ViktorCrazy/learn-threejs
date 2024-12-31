@@ -5,6 +5,28 @@ import * as CANNON from 'cannon';
 let scene = new THREE.Scene();
 scene.add(new THREE.AxesHelper(5))
 
+const light1 = new THREE.SpotLight(0xffffff, 100)
+light1.position.set(2.5, 5, 5)
+light1.angle = Math.PI / 4
+light1.penumbra = 0.5
+light1.castShadow = true
+light1.shadow.mapSize.width = 1024
+light1.shadow.mapSize.height = 1024
+light1.shadow.camera.near = 0.5
+light1.shadow.camera.far = 20
+scene.add(light1)
+
+const light2 = new THREE.SpotLight(0xffffff, 100)
+light2.position.set(-2.5, 5, 5)
+light2.angle = Math.PI / 4
+light2.penumbra = 0.5
+light2.castShadow = true
+light2.shadow.mapSize.width = 1024
+light2.shadow.mapSize.height = 1024
+light2.shadow.camera.near = 0.5
+light2.shadow.camera.far = 20
+scene.add(light2)
+
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -12,12 +34,15 @@ document.body.appendChild(renderer.domElement);
 
 // Set up Cannon.js world
 let world = new CANNON.World();
-world.gravity.set(0, 0, 0)
+world.gravity.set(0, -9.82, 0)
 
 // Create the cube as the vehicle body (in Three.js)
 let vehicleGeometry = new THREE.BoxGeometry(2, 1, 4);
 let vehicleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 let vehicleMesh = new THREE.Mesh(vehicleGeometry, vehicleMaterial);
+vehicleMesh.position.x = 0
+vehicleMesh.position.y = 1
+vehicleMesh.castShadow = true
 scene.add(vehicleMesh);
 
 // const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
@@ -34,22 +59,20 @@ vehicleBody.position.y = vehicleMesh.position.y
 vehicleBody.position.z = vehicleMesh.position.z
 world.addBody(vehicleBody)
 
-// Create a ground (plane) in Three.js
-// let groundGeometry = new THREE.PlaneGeometry(500, 500);
-// let groundMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
-// let groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-// groundMesh.rotation.x = -Math.PI / 2;
-// groundMesh.position.y = -1;
-// scene.add(groundMesh);
 
-// // Create a ground (plane) in Cannon.js
-// let groundShape = new CANNON.Plane();
-// let groundBody = new CANNON.Body({
-//     mass: 0  // Static body
-// });
-// groundBody.addShape(groundShape);
-// groundBody.position.y = -1;
-// world.addBody(groundBody);
+const phongMaterial = new THREE.MeshPhongMaterial()
+
+// Create a ground (plane) in Three.js
+const planeGeometry = new THREE.PlaneGeometry(25, 25)
+const planeMesh = new THREE.Mesh(planeGeometry, phongMaterial)
+planeMesh.rotateX(-Math.PI / 2)
+planeMesh.receiveShadow = true
+scene.add(planeMesh)
+const planeShape = new CANNON.Plane()
+const planeBody = new CANNON.Body({ mass: 0 })
+planeBody.addShape(planeShape)
+planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+world.addBody(planeBody)
 
 // Set up controls (WASD)
 let controls = { forward: false, backward: false, left: false, right: false };
