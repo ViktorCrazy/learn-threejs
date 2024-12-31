@@ -52,14 +52,37 @@ function init() {
     scene.add(groundMesh);
 
     // Create and Add Multiple Cubes
-    const cubeMaterials = [
-        { color: 0xff0000, friction: 0.1, restitution: 0.5 },
-        { color: 0x00ff00, friction: 0.2, restitution: 0.4 },
-        { color: 0x0000ff, friction: 0.3, restitution: 0.3 },
-        { color: 0xffff00, friction: 0.5, restitution: 0.2 },
-        { color: 0xff00ff, friction: 0.6, restitution: 0.1 },
-        { color: 0x00ffff, friction: 0.0, restitution: 0.8 },
-    ];
+    // const cubeMaterials = [
+    //     { color: 0xff0000, friction: 0.1, restitution: 0.5 },
+    //     { color: 0x00ff00, friction: 0.2, restitution: 0.4 },
+    //     { color: 0x0000ff, friction: 0.3, restitution: 0.3 },
+    //     { color: 0xffff00, friction: 0.5, restitution: 0.2 },
+    //     { color: 0xff00ff, friction: 0.6, restitution: 0.1 },
+    //     { color: 0x00ffff, friction: 0.0, restitution: 0.8 },
+    // ];
+
+    // Random range generator function
+    function getRandomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    // Function to generate a random cube material
+    function generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange) {
+        const color = Math.floor(Math.random() * (colorRange.max - colorRange.min + 1) + colorRange.min);
+        const friction = getRandomInRange(frictionRange.min, frictionRange.max);
+        const restitution = getRandomInRange(restitutionRange.min, restitutionRange.max);
+
+        return { color, friction, restitution };
+    }
+
+    // Define configurable ranges
+    const colorRange = { min: 0x000000, max: 0xffffff };  // Ranges for the color (Hex)
+    const frictionRange = { min: 0.0, max: 1.0 };         // Ranges for friction
+    const restitutionRange = { min: 0.0, max: 1.0 };      // Ranges for restitution
+
+    // Generate random cube materials
+    const cubeMaterials = Array.from({ length: 100 }, () => generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange));
+
 
     const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 
