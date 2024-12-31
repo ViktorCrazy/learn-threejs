@@ -12,6 +12,7 @@
   "dependencies": {
     "canvas": "^3.0.0",
     "perlin-noise": "^0.0.1",
+    "sharp": "^0.33.5",
     "voronoi": "^1.0.0"
   }
 }
