@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Stats from 'three/examples/jsm/libs/stats.module'
 import { GUI } from 'dat.gui'
-import * as CANNON from 'cannon-es'
+import * as CANNON from 'cannon'
 
 const scene = new THREE.Scene()
 scene.add(new THREE.AxesHelper(5))
@@ -43,9 +43,6 @@ controls.target.y = 0.5
 
 const world = new CANNON.World()
 world.gravity.set(0, -9.82, 0)
-// world.broadphase = new CANNON.NaiveBroadphase()
-// ;(world.solver as CANNON.GSSolver).iterations = 10
-// world.allowSleep = true
 
 const normalMaterial = new THREE.MeshNormalMaterial()
 const phongMaterial = new THREE.MeshPhongMaterial()
@@ -84,25 +81,27 @@ icosahedronMesh.position.x = 1
 icosahedronMesh.position.y = 3
 icosahedronMesh.castShadow = true
 scene.add(icosahedronMesh)
-const position = (icosahedronMesh.geometry.attributes.position as THREE.BufferAttribute).array
-const icosahedronPoints: CANNON.Vec3[] = []
+const position = icosahedronMesh.geometry.attributes.position.array
+const icosahedronPoints = []
 for (let i = 0; i < position.length; i += 3) {
     icosahedronPoints.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]))
 }
-const icosahedronFaces: number[][] = []
+const icosahedronFaces = []
 for (let i = 0; i < position.length / 3; i += 3) {
     icosahedronFaces.push([i, i + 1, i + 2])
 }
-const icosahedronShape = new CANNON.ConvexPolyhedron({
-    vertices: icosahedronPoints,
-    faces: icosahedronFaces,
-})
-const icosahedronBody = new CANNON.Body({ mass: 1 })
-icosahedronBody.addShape(icosahedronShape)
-icosahedronBody.position.x = icosahedronMesh.position.x
-icosahedronBody.position.y = icosahedronMesh.position.y
-icosahedronBody.position.z = icosahedronMesh.position.z
-world.addBody(icosahedronBody)
+
+// const icosahedronShape = new CANNON.ConvexPolyhedron({
+//     vertices: icosahedronPoints,
+//     faces: icosahedronFaces,
+// })
+
+// const icosahedronBody = new CANNON.Body({ mass: 1 })
+// icosahedronBody.addShape(icosahedronShape)
+// icosahedronBody.position.x = icosahedronMesh.position.x
+// icosahedronBody.position.y = icosahedronMesh.position.y
+// icosahedronBody.position.z = icosahedronMesh.position.z
+// world.addBody(icosahedronBody)
 
 const torusKnotGeometry = new THREE.TorusKnotGeometry()
 const torusKnotMesh = new THREE.Mesh(torusKnotGeometry, normalMaterial)
@@ -110,16 +109,6 @@ torusKnotMesh.position.x = 4
 torusKnotMesh.position.y = 3
 torusKnotMesh.castShadow = true
 scene.add(torusKnotMesh)
-// position = (torusKnotMesh.geometry.attributes.position as THREE.BufferAttribute).array
-// const torusKnotPoints: CANNON.Vec3[] = []
-// for (let i = 0; i < position.length; i += 3) {
-//     torusKnotPoints.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]));
-// }
-// const torusKnotFaces: number[][] = []
-// for (let i = 0; i < position.length / 3; i += 3) {
-//     torusKnotFaces.push([i, i + 1, i + 2])
-// }
-// const torusKnotShape = new CANNON.ConvexPolyhedron(torusKnotPoints, torusKnotFaces)
 const torusKnotShape = CreateTrimesh(torusKnotMesh.geometry)
 const torusKnotBody = new CANNON.Body({ mass: 1 })
 torusKnotBody.addShape(torusKnotShape)
@@ -128,10 +117,10 @@ torusKnotBody.position.y = torusKnotMesh.position.y
 torusKnotBody.position.z = torusKnotMesh.position.z
 world.addBody(torusKnotBody)
 
-function CreateTrimesh(geometry: THREE.BufferGeometry) {
-    const vertices = (geometry.attributes.position as THREE.BufferAttribute).array
+function CreateTrimesh(geometry) {
+    const vertices = geometry.attributes.position.array
     const indices = Object.keys(vertices).map(Number)
-    return new CANNON.Trimesh(vertices as unknown as number[], indices)
+    return new CANNON.Trimesh(vertices, indices)
 }
 
 const planeGeometry = new THREE.PlaneGeometry(25, 25)
@@ -171,7 +160,6 @@ function animate() {
 
     controls.update()
 
-    //delta = clock.getDelta()
     delta = Math.min(clock.getDelta(), 0.1)
     world.step(delta)
 
@@ -180,8 +168,8 @@ function animate() {
     cubeMesh.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w)
     sphereMesh.position.set(sphereBody.position.x, sphereBody.position.y, sphereBody.position.z)
     sphereMesh.quaternion.set(sphereBody.quaternion.x, sphereBody.quaternion.y, sphereBody.quaternion.z, sphereBody.quaternion.w)
-    icosahedronMesh.position.set(icosahedronBody.position.x, icosahedronBody.position.y, icosahedronBody.position.z)
-    icosahedronMesh.quaternion.set(icosahedronBody.quaternion.x, icosahedronBody.quaternion.y, icosahedronBody.quaternion.z, icosahedronBody.quaternion.w)
+    // icosahedronMesh.position.set(icosahedronBody.position.x, icosahedronBody.position.y, icosahedronBody.position.z)
+    // icosahedronMesh.quaternion.set(icosahedronBody.quaternion.x, icosahedronBody.quaternion.y, icosahedronBody.quaternion.z, icosahedronBody.quaternion.w)
     torusKnotMesh.position.set(torusKnotBody.position.x, torusKnotBody.position.y, torusKnotBody.position.z)
     torusKnotMesh.quaternion.set(torusKnotBody.quaternion.x, torusKnotBody.quaternion.y, torusKnotBody.quaternion.z, torusKnotBody.quaternion.w)
 

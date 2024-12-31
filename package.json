@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/dat.gui": "^0.7.13",
     "vite": "^6.0.5"
   },
   "dependencies": {
