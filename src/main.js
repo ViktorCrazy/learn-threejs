@@ -25,6 +25,9 @@ light.position.set(1, 1, 1);
 scene.add(light);
 scene.add(new THREE.AmbientLight(0x666666));
 
+// Store original positions
+const originalPositions = torus.geometry.attributes.position.array.slice();
+
 let time = 0;
 function animate() {
     requestAnimationFrame(animate);
@@ -37,12 +40,13 @@ function animate() {
     // Modify vertices for wave effect
     const positions = torus.geometry.attributes.position;
     for (let i = 0; i < positions.count; i++) {
-        const x = positions.getX(i);
-        const y = positions.getY(i);
-        const z = positions.getZ(i);
+        const x = originalPositions[i * 3];
+        const y = originalPositions[i * 3 + 1];
+        const z = originalPositions[i * 3 + 2];
 
-        positions.setX(i, x + Math.sin(time + y) * 0.1);
-        positions.setZ(i, z + Math.cos(time + x) * 0.1);
+        positions.setX(i, x + Math.sin(time + y) * 0.2); // Increased amplitude for X
+        positions.setY(i, y); // No change to Y
+        positions.setZ(i, z + Math.cos(time + x) * 0.2); // Increased amplitude for Z
     }
     positions.needsUpdate = true;
 
