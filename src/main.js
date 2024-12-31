@@ -85,7 +85,23 @@ function init() {
     scene.add(groundBoxMesh);
     objects.push({ body: groundMaterialBody, mesh: groundBoxMesh });
 
+    // Add event listener for keyboard input
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'f') { // Press 'f' to apply force
+            applyForceToAllCubes();
+        }
+    });
+
     animate();
+}
+
+function applyForceToAllCubes() {
+    const force = new CANNON.Vec3(30, 0, 0); // Force vector (e.g., upward)
+    const point = new CANNON.Vec3(0, 0, 0); // Point of application
+
+    objects.forEach(({ body }) => {
+        body.applyForce(force, point);
+    });
 }
 
 function animate() {
