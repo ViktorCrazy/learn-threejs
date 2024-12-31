@@ -51,16 +51,6 @@ function init() {
     groundMesh.rotation.x = -Math.PI / 2;
     scene.add(groundMesh);
 
-    // Create and Add Multiple Cubes
-    // const cubeMaterials = [
-    //     { color: 0xff0000, friction: 0.1, restitution: 0.5 },
-    //     { color: 0x00ff00, friction: 0.2, restitution: 0.4 },
-    //     { color: 0x0000ff, friction: 0.3, restitution: 0.3 },
-    //     { color: 0xffff00, friction: 0.5, restitution: 0.2 },
-    //     { color: 0xff00ff, friction: 0.6, restitution: 0.1 },
-    //     { color: 0x00ffff, friction: 0.0, restitution: 0.8 },
-    // ];
-
     // Random range generator function
     function getRandomInRange(min, max) {
         return Math.random() * (max - min) + min;
@@ -82,7 +72,6 @@ function init() {
 
     // Generate random cube materials
     const cubeMaterials = Array.from({ length: 100 }, () => generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange));
-
 
     const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 
@@ -111,6 +100,7 @@ function init() {
         objects.push({ body: boxBody, mesh: boxMesh });
     });
 
+
     // Add event listener for keyboard input
     const keyForceMap = {
         'a': new CANNON.Vec3(-500, 0, 0), // Force along the negative x-axis
@@ -118,24 +108,33 @@ function init() {
         'w': new CANNON.Vec3(0, 500, 0)   // Force upward
     };
 
+    // Add event listener for keyboard input
     window.addEventListener('keydown', (event) => {
-        const force = keyForceMap[event.key];
-        if (force) {
-            objects.forEach(({ body }) => {
-                body.applyForce(force, body.position); // Apply force at center
-            });
+        if (event.key === 's') {
+            moveCubesToPoint(new CANNON.Vec3(0, 0, 0)); // Move cubes to the origin when 's' is pressed
+        } else {
+            const force = keyForceMap[event.key];
+            if (force) {
+                objects.forEach(({ body }) => {
+                    body.applyForce(force, body.position); // Apply force at center
+                });
+            }
         }
+
+
     });
 
     animate();
 }
 
-function applyForceToAllCubes() {
-    const force = new CANNON.Vec3(30, 0, 0); // Force vector (e.g., upward)
-    const point = new CANNON.Vec3(0, 0, 0); // Point of application
-
+// Function to move all cubes towards a target point
+function moveCubesToPoint(targetPoint) {
     objects.forEach(({ body }) => {
-        body.applyForce(force, point);
+        const direction = targetPoint.vsub(body.position); // Calculate the direction vector towards the target
+        const forceMagnitude = 500; // Adjust this value for how strongly the cubes are pulled
+        const force = direction.unit().scale(forceMagnitude); // Apply force in that direction
+
+        body.applyForce(force, body.position); // Apply the force to each cube
     });
 }
 
