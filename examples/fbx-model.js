@@ -32,31 +32,47 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
-// Animation mixer
-let mixer;
+// Animation mixers
+const mixers = [];
 
-// Load FBX model
+// FBX loader
 const fbxLoader = new FBXLoader();
-fbxLoader.load(
-    '/rp_sophia_animated_003_idling.fbx', // Replace with your FBX file path
-    (fbx) => {
-        fbx.scale.set(0.01, 0.01, 0.01); // Adjust the scale if necessary
-        scene.add(fbx);
 
-        // Create animation mixer
-        mixer = new THREE.AnimationMixer(fbx);
-        if (fbx.animations.length > 0) {
-            const action = mixer.clipAction(fbx.animations[0]);
-            action.play();
+// Function to add a new FBX instance
+function addFBXInstance() {
+    fbxLoader.load(
+        '/rp_sophia_animated_003_idling.fbx', // Replace with your FBX file path
+        (fbx) => {
+            fbx.scale.set(0.01, 0.01, 0.01); // Adjust the scale if necessary
+            fbx.position.set(
+                Math.random() * 4 - 2, // Random x position
+                0,
+                Math.random() * 4 - 2 // Random z position
+            );
+            scene.add(fbx);
+
+            // Create animation mixer
+            const mixer = new THREE.AnimationMixer(fbx);
+            if (fbx.animations.length > 0) {
+                const action = mixer.clipAction(fbx.animations[0]);
+                action.play();
+            }
+            mixers.push(mixer);
+        },
+        (xhr) => {
+            console.log(`FBX Model: ${(xhr.loaded / xhr.total) * 100}% loaded`);
+        },
+        (error) => {
+            console.error('Error loading FBX model:', error);
         }
-    },
-    (xhr) => {
-        console.log(`FBX Model: ${(xhr.loaded / xhr.total) * 100}% loaded`);
-    },
-    (error) => {
-        console.error('Error loading FBX model:', error);
-    }
-);
+    );
+}
+
+// Add an initial FBX instance
+addFBXInstance();
+
+// Handle click to add more FBX instances
+window.addEventListener('click', addFBXInstance);
 
 // Handle window resize
 window.addEventListener('resize', () => {
@@ -71,7 +87,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     const delta = clock.getDelta();
-    if (mixer) mixer.update(delta);
+    mixers.forEach((mixer) => mixer.update(delta));
 
     controls.update();
     renderer.render(scene, camera);
