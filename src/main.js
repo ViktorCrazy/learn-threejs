@@ -1,88 +1,106 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as CANNON from 'cannon'; // Ensure you're using the appropriate Cannon.js library
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 10, 20);
+let scene, camera, renderer, world;
+let objects = [];
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+function init() {
+    // Initialize Three.js Scene
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 15);
 
-// Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(10, 10, 10);
-scene.add(directionalLight);
+    const controls = new OrbitControls(camera, renderer.domElement);
 
-// Materials
-const groundMaterial = new THREE.MeshStandardMaterial({
-    color: 0x228b22,
-    roughness: 0.8,
-    metalness: 0.3,
-});
+    // Add lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
 
-const slipperyMaterial = new THREE.MeshStandardMaterial({
-    color: 0x87ceeb,
-    roughness: 0.0,
-    metalness: 0.5,
-});
+    // Initialize Cannon.js Physics World
+    world = new CANNON.World();
+    world.gravity.set(0, -9.82, 0); // Set gravity
 
-const boxMaterial = new THREE.MeshStandardMaterial({
-    color: 0xff6347,
-    roughness: 0.4,
-    metalness: 0.5,
-});
+    // Create Materials
+    const groundMaterial = new CANNON.Material("groundMaterial");
+    const slipperyMaterial = new CANNON.Material("slipperyMaterial");
 
-// Ground Plane
-const groundGeometry = new THREE.PlaneGeometry(50, 50);
-const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-groundMesh.rotation.x = -Math.PI / 2;
-scene.add(groundMesh);
+    // Contact Materials
+    const ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
+        friction: 0.4,
+        restitution: 0.3,
+    });
+    world.addContactMaterial(ground_ground_cm);
 
-// Boxes
-const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+    const slippery_ground_cm = new CANNON.ContactMaterial(groundMaterial, slipperyMaterial, {
+        friction: 0.0,
+        restitution: 0.5,
+    });
+    world.addContactMaterial(slippery_ground_cm);
 
-// Slippery Box
-const slipperyBox = new THREE.Mesh(boxGeometry, slipperyMaterial);
-slipperyBox.position.set(0, 1, 5);
-scene.add(slipperyBox);
+    // Create Ground
+    const groundShape = new CANNON.Plane();
+    const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
+    groundBody.addShape(groundShape);
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    world.addBody(groundBody);
 
-// Box with ground-like material
-const groundBox = new THREE.Mesh(boxGeometry, boxMaterial);
-groundBox.position.set(8, 1, 5);
-scene.add(groundBox);
+    const groundMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(20, 20),
+        new THREE.MeshStandardMaterial({ color: 0x888888 })
+    );
+    groundMesh.rotation.x = -Math.PI / 2;
+    scene.add(groundMesh);
 
-// Add gravity-like animation
-const gravity = new THREE.Vector3(0, -9.8, 0);
-let slipperyVelocity = new THREE.Vector3(-1, 0, 0); // initial velocity along x-axis
-let groundBoxVelocity = new THREE.Vector3(-0.5, 0, 0);
+    // Create Box with Slippery Material
+    const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const slipperyMaterialBody = new CANNON.Body({ mass: 1, material: slipperyMaterial });
+    slipperyMaterialBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
+    slipperyMaterialBody.position.set(-2, 5, 0);
+    world.addBody(slipperyMaterialBody);
+
+    const slipperyBoxMesh = new THREE.Mesh(
+        boxGeometry,
+        new THREE.MeshStandardMaterial({ color: 0xff0000 })
+    );
+    scene.add(slipperyBoxMesh);
+    objects.push({ body: slipperyMaterialBody, mesh: slipperyBoxMesh });
+
+    // Create Box with Ground Material
+    const groundMaterialBody = new CANNON.Body({ mass: 1, material: groundMaterial });
+    groundMaterialBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
+    groundMaterialBody.position.set(2, 5, 0);
+    world.addBody(groundMaterialBody);
+
+    const groundBoxMesh = new THREE.Mesh(
+        boxGeometry,
+        new THREE.MeshStandardMaterial({ color: 0x0000ff })
+    );
+    scene.add(groundBoxMesh);
+    objects.push({ body: groundMaterialBody, mesh: groundBoxMesh });
+
+    animate();
+}
 
 function animate() {
     requestAnimationFrame(animate);
 
-    // Apply pseudo-gravity
-    if (slipperyBox.position.y > 0.5) {
-        slipperyVelocity.addScaledVector(gravity, 0.01); // reduce Y
-    }
-    if (groundBox.position.y > 0.5) {
-        groundBoxVelocity.addScaledVector(gravity, 0.01); // reduce Y
-    }
+    const timeStep = 1 / 60;
+    world.step(timeStep);
 
-    // Update positions
-    slipperyBox.position.addScaledVector(slipperyVelocity, 0.1);
-    groundBox.position.addScaledVector(groundBoxVelocity, 0.1);
-
-    // Stop boxes on the ground
-    if (slipperyBox.position.y <= 0.5) slipperyVelocity.y = 0;
-    if (groundBox.position.y <= 0.5) groundBoxVelocity.y = 0;
+    // Sync Three.js objects with Cannon.js bodies
+    objects.forEach(({ body, mesh }) => {
+        mesh.position.copy(body.position);
+        mesh.quaternion.copy(body.quaternion);
+    });
 
     renderer.render(scene, camera);
 }
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-
-animate();
+init();
