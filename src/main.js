@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -9,6 +10,15 @@ camera.lookAt(0, 0, 0);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+// OrbitControls setup
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // Adds smooth dampened movement
+controls.dampingFactor = 0.05; // Adjust the damping factor
+controls.screenSpacePanning = false; // Prevents the camera from panning in screen space
+controls.minDistance = 5; // Set minimum zoom distance
+controls.maxDistance = 50; // Set maximum zoom distance
+controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation to avoid flipping
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -129,6 +139,7 @@ scene.add(instancedGrassDynamic);
 // Animation loop
 function animate() {
     grassMaterial5.uniforms.time.value += 0.02;
+    controls.update(); // Update the controls
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
