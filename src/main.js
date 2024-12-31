@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import { Demo } from "./utils/cannon-demo";
+import { Demo } from "./utils/cannon/demo";
 
 const demo = new Demo();
 const size = 1.0;

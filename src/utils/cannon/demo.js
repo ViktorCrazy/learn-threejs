@@ -1,5 +1,6 @@
-
+import * as THREE from 'three';
 import * as CANNON from 'cannon';
+import { Detector } from './detector';
 
 export const Demo = function (options) {
 
