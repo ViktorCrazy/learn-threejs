@@ -27,9 +27,8 @@ function init() {
     world = new CANNON.World();
     world.gravity.set(0, -9.82, 0); // Set gravity
 
-    // Create Materials
+    // Create Ground Material
     const groundMaterial = new CANNON.Material("groundMaterial");
-    const slipperyMaterial = new CANNON.Material("slipperyMaterial");
 
     // Contact Materials
     const ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
@@ -37,12 +36,6 @@ function init() {
         restitution: 0.3,
     });
     world.addContactMaterial(ground_ground_cm);
-
-    const slippery_ground_cm = new CANNON.ContactMaterial(groundMaterial, slipperyMaterial, {
-        friction: 0.0,
-        restitution: 0.5,
-    });
-    world.addContactMaterial(slippery_ground_cm);
 
     // Create Ground
     const groundShape = new CANNON.Plane();
@@ -58,32 +51,42 @@ function init() {
     groundMesh.rotation.x = -Math.PI / 2;
     scene.add(groundMesh);
 
-    // Create Box with Slippery Material
+    // Create and Add Multiple Cubes
+    const cubeMaterials = [
+        { color: 0xff0000, friction: 0.1, restitution: 0.5 },
+        { color: 0x00ff00, friction: 0.2, restitution: 0.4 },
+        { color: 0x0000ff, friction: 0.3, restitution: 0.3 },
+        { color: 0xffff00, friction: 0.5, restitution: 0.2 },
+        { color: 0xff00ff, friction: 0.6, restitution: 0.1 },
+        { color: 0x00ffff, friction: 0.0, restitution: 0.8 },
+    ];
+
     const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const slipperyMaterialBody = new CANNON.Body({ mass: 1, material: slipperyMaterial });
-    slipperyMaterialBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
-    slipperyMaterialBody.position.set(-2, 5, 0);
-    world.addBody(slipperyMaterialBody);
 
-    const slipperyBoxMesh = new THREE.Mesh(
-        boxGeometry,
-        new THREE.MeshStandardMaterial({ color: 0xff0000 })
-    );
-    scene.add(slipperyBoxMesh);
-    objects.push({ body: slipperyMaterialBody, mesh: slipperyBoxMesh });
+    cubeMaterials.forEach((materialProps, index) => {
+        // Create Cannon.js Material
+        const boxMaterial = new CANNON.Material();
+        const contactMaterial = new CANNON.ContactMaterial(groundMaterial, boxMaterial, {
+            friction: materialProps.friction,
+            restitution: materialProps.restitution,
+        });
+        world.addContactMaterial(contactMaterial);
 
-    // Create Box with Ground Material
-    const groundMaterialBody = new CANNON.Body({ mass: 1, material: groundMaterial });
-    groundMaterialBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
-    groundMaterialBody.position.set(2, 5, 0);
-    world.addBody(groundMaterialBody);
+        // Create Cannon.js Body
+        const boxBody = new CANNON.Body({ mass: 1, material: boxMaterial });
+        boxBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
+        boxBody.position.set(-5 + index * 2, 5, 0);
+        world.addBody(boxBody);
 
-    const groundBoxMesh = new THREE.Mesh(
-        boxGeometry,
-        new THREE.MeshStandardMaterial({ color: 0x0000ff })
-    );
-    scene.add(groundBoxMesh);
-    objects.push({ body: groundMaterialBody, mesh: groundBoxMesh });
+        // Create Three.js Mesh
+        const boxMesh = new THREE.Mesh(
+            boxGeometry,
+            new THREE.MeshStandardMaterial({ color: materialProps.color })
+        );
+        scene.add(boxMesh);
+
+        objects.push({ body: boxBody, mesh: boxMesh });
+    });
 
     // Add event listener for keyboard input
     window.addEventListener('keydown', (event) => {
