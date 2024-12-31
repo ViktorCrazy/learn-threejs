@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { Detector } from './detector';
+import { SmoothieChart, TimeSeries } from './smoothie';
+import { Stats } from './stats';
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
+import * as dat from 'dat.gui'
+
 
 export const Demo = function (options) {
 
@@ -568,7 +573,7 @@ export const Demo = function (options) {
         stats.domElement.style.zIndex = 100;
         container.appendChild(stats.domElement);
 
-        if (window.dat != undefined) {
+        if (dat != undefined) {
             gui = new dat.GUI();
 
             gui.domElement.parentNode.style.zIndex = 120;
@@ -666,7 +671,7 @@ export const Demo = function (options) {
         }
 
         // Trackball controls
-        controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls = new TrackballControls(camera, renderer.domElement);
         controls.rotateSpeed = 1.0;
         controls.zoomSpeed = 1.2;
         controls.panSpeed = 0.2;
