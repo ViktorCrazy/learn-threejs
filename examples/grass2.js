@@ -29,7 +29,7 @@ scene.add(directionalLight);
 
 // 1. Texture Mapping
 const textureLoader = new THREE.TextureLoader();
-const grassTexture = textureLoader.load('green-grass-512x512.jpg');
+const grassTexture = textureLoader.load('/green-grass-512x512.png');
 grassTexture.wrapS = THREE.RepeatWrapping;
 grassTexture.wrapT = THREE.RepeatWrapping;
 grassTexture.repeat.set(10, 10);
@@ -138,7 +138,7 @@ scene.add(instancedGrassDynamic);
 
 // Animation loop
 function animate() {
-    grassMaterial5.uniforms.time.value += 0.02;
+    // grassMaterial5.uniforms.time.value += 0.02;
     controls.update(); // Update the controls
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
