@@ -71,7 +71,7 @@ function init() {
     const restitutionRange = { min: 0.0, max: 1.0 };      // Ranges for restitution
 
     // Generate random cube materials
-    const cubeMaterials = Array.from({ length: 100 }, () => generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange));
+    const cubeMaterials = Array.from({ length: 200 }, () => generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange));
 
     const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 
@@ -112,6 +112,8 @@ function init() {
     window.addEventListener('keydown', (event) => {
         if (event.key === 's') {
             moveCubesToPoint(new CANNON.Vec3(0, 0, 0)); // Move cubes to the origin when 's' is pressed
+        } else if (event.key === 'x') {
+            moveFromToPoint(new CANNON.Vec3(0, 0, 0));
         } else {
             const force = keyForceMap[event.key];
             if (force) {
@@ -137,6 +139,17 @@ function moveCubesToPoint(targetPoint) {
         body.applyForce(force, body.position); // Apply the force to each cube
     });
 }
+
+function moveFromToPoint(targetPoint) {
+    objects.forEach(({ body }) => {
+        const direction = targetPoint.vsub(body.position); // Calculate the direction vector towards the target
+        const forceMagnitude = -500; // Adjust this value for how strongly the cubes are pulled
+        const force = direction.unit().scale(forceMagnitude); // Apply force in that direction
+
+        body.applyForce(force, body.position); // Apply the force to each cube
+    });
+}
+
 
 function animate() {
     requestAnimationFrame(animate);
