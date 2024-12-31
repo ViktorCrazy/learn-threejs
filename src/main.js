@@ -3,6 +3,8 @@ import * as CANNON from 'cannon';
 
 // Set up the Three.js scene
 let scene = new THREE.Scene();
+scene.add(new THREE.AxesHelper(5))
+
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -10,7 +12,7 @@ document.body.appendChild(renderer.domElement);
 
 // Set up Cannon.js world
 let world = new CANNON.World();
-world.gravity.set(0, 0, 0);  // Gravity
+world.gravity.set(0, -9.82, 0)
 
 // Create the cube as the vehicle body (in Three.js)
 let vehicleGeometry = new THREE.BoxGeometry(2, 1, 4);
@@ -114,7 +116,7 @@ function animate() {
     vehicleMesh.quaternion.set(vehicleBody.quaternion.x, vehicleBody.quaternion.y, vehicleBody.quaternion.z, vehicleBody.quaternion.w);
 
     // Update the vehicle based on controls
-    updateVehicle();
+    // updateVehicle();
 
     // Update target camera position based on vehicle position and offset
     targetPosition.set(vehicleBody.position.x, vehicleBody.position.y, vehicleBody.position.z).add(cameraOffset);
@@ -136,3 +138,12 @@ function animate() {
 
 // Start the animation loop
 animate();
+
+
+window.addEventListener('resize', onWindowResize, false)
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render()
+}
