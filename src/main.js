@@ -32,6 +32,9 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
+// Animation mixer
+let mixer;
+
 // Load FBX model
 const fbxLoader = new FBXLoader();
 fbxLoader.load(
@@ -39,6 +42,13 @@ fbxLoader.load(
     (fbx) => {
         fbx.scale.set(0.01, 0.01, 0.01); // Adjust the scale if necessary
         scene.add(fbx);
+
+        // Create animation mixer
+        mixer = new THREE.AnimationMixer(fbx);
+        if (fbx.animations.length > 0) {
+            const action = mixer.clipAction(fbx.animations[0]);
+            action.play();
+        }
     },
     (xhr) => {
         console.log(`FBX Model: ${(xhr.loaded / xhr.total) * 100}% loaded`);
@@ -56,8 +66,13 @@ window.addEventListener('resize', () => {
 });
 
 // Animation loop
+const clock = new THREE.Clock();
 function animate() {
     requestAnimationFrame(animate);
+
+    const delta = clock.getDelta();
+    if (mixer) mixer.update(delta);
+
     controls.update();
     renderer.render(scene, camera);
 }
