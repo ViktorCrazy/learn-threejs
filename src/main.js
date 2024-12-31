@@ -10,7 +10,7 @@ document.body.appendChild(renderer.domElement);
 
 // Set up Cannon.js world
 let world = new CANNON.World();
-world.gravity.set(0, -9.82, 0);  // Gravity
+world.gravity.set(0, 0, 0);  // Gravity
 
 // Create the cube as the vehicle body (in Three.js)
 let vehicleGeometry = new THREE.BoxGeometry(2, 1, 4);
@@ -18,15 +18,19 @@ let vehicleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 let vehicleMesh = new THREE.Mesh(vehicleGeometry, vehicleMaterial);
 scene.add(vehicleMesh);
 
-// Create the cube as the vehicle body (in Cannon.js)
-let vehicleShape = new CANNON.Box(new CANNON.Vec3(1, 0.5, 2));
-let vehicleBody = new CANNON.Body({
-    mass: 150,
-    position: new CANNON.Vec3(0, 5, 0),
-    angularDamping: 0.8
-});
-vehicleBody.addShape(vehicleShape);
-world.addBody(vehicleBody);
+// const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
+// const cubeMesh = new THREE.Mesh(cubeGeometry, vehicleMaterial)
+// cubeMesh.position.x = -3
+// cubeMesh.position.y = 3
+// cubeMesh.castShadow = true
+// scene.add(cubeMesh)
+const vehicleShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+const vehicleBody = new CANNON.Body({ mass: 1 })
+vehicleBody.addShape(vehicleShape)
+vehicleBody.position.x = vehicleMesh.position.x
+vehicleBody.position.y = vehicleMesh.position.y
+vehicleBody.position.z = vehicleMesh.position.z
+world.addBody(vehicleBody)
 
 // Create a ground (plane) in Three.js
 let groundGeometry = new THREE.PlaneGeometry(500, 500);
