@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "cannon": "^0.6.2",
+    "dat.gui": "^0.7.9",
     "lil-gui": "^0.20.0",
     "three": "^0.171.0"
   }
