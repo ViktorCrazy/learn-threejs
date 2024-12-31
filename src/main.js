@@ -90,8 +90,24 @@ function init() {
 
     // Add event listener for keyboard input
     window.addEventListener('keydown', (event) => {
-        if (event.key === 'f') { // Press 'f' to apply force
-            applyForceToAllCubes();
+        if (event.key === 'd') { // Press 'f' to apply force
+            const force = new CANNON.Vec3(50, 0, 0); // Force vector (e.g., upward)
+            const point = new CANNON.Vec3(0.25, 0.25, 0.25); // Point of application
+
+            objects.forEach(({ body }) => {
+                body.applyForce(force, point);
+            });
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'w') { // Press 'f' to apply force
+            const force = new CANNON.Vec3(0, 50, 0); // Force vector (e.g., upward)
+            const point = new CANNON.Vec3(0.25, 0.25, 0.25); // Point of application
+
+            objects.forEach(({ body }) => {
+                body.applyForce(force, point);
+            });
         }
     });
 
