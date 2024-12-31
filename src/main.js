@@ -98,22 +98,26 @@ let ctx = canvas.getContext('2d');
 ctx.font = '16px Arial';
 ctx.fillStyle = 'white';
 
+const clock = new THREE.Clock()
+let delta
+
 // Set up the animation loop
 function animate() {
     requestAnimationFrame(animate);
 
     // Update physics world
-    world.step(1 / 60);
+    delta = Math.min(clock.getDelta(), 0.1)
+    world.step(delta)
 
     // Sync Three.js vehicle position and rotation with Cannon.js vehicle body
-    vehicleMesh.position.copy(vehicleBody.position);
-    vehicleMesh.quaternion.copy(vehicleBody.quaternion);
+    vehicleMesh.position.set(vehicleBody.position.x, vehicleBody.position.y, vehicleBody.position.z);
+    vehicleMesh.quaternion.set(vehicleBody.quaternion.x, vehicleBody.quaternion.y, vehicleBody.quaternion.z, vehicleBody.quaternion.w);
 
     // Update the vehicle based on controls
     updateVehicle();
 
     // Update target camera position based on vehicle position and offset
-    targetPosition.copy(vehicleBody.position).add(cameraOffset);
+    targetPosition.set(vehicleBody.position.x, vehicleBody.position.y, vehicleBody.position.z).add(cameraOffset);
 
     // Smoothly interpolate camera position towards target position
     camera.position.lerp(targetPosition, cameraSmoothness);
