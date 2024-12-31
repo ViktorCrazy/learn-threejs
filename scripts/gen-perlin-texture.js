@@ -3,8 +3,8 @@ const perlin = require('perlin-noise');
 const fs = require('fs');
 
 // Texture size
-const width = 512;
-const height = 512;
+const width = 128;  // Change to 128
+const height = 128; // Change to 128
 
 // Create a canvas with the desired size
 const canvas = createCanvas(width, height);
