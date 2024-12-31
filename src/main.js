@@ -3,29 +3,29 @@ import * as CANNON from 'cannon';
 
 // Set up the Three.js scene
 let scene = new THREE.Scene();
-scene.add(new THREE.AxesHelper(5))
+scene.add(new THREE.AxesHelper(5));
 
-const light1 = new THREE.SpotLight(0xffffff, 100)
-light1.position.set(2.5, 5, 5)
-light1.angle = Math.PI / 4
-light1.penumbra = 0.5
-light1.castShadow = true
-light1.shadow.mapSize.width = 1024
-light1.shadow.mapSize.height = 1024
-light1.shadow.camera.near = 0.5
-light1.shadow.camera.far = 20
-scene.add(light1)
+const light1 = new THREE.SpotLight(0xffffff, 100);
+light1.position.set(2.5, 5, 5);
+light1.angle = Math.PI / 4;
+light1.penumbra = 0.5;
+light1.castShadow = true;
+light1.shadow.mapSize.width = 1024;
+light1.shadow.mapSize.height = 1024;
+light1.shadow.camera.near = 0.5;
+light1.shadow.camera.far = 20;
+scene.add(light1);
 
-const light2 = new THREE.SpotLight(0xffffff, 100)
-light2.position.set(-2.5, 5, 5)
-light2.angle = Math.PI / 4
-light2.penumbra = 0.5
-light2.castShadow = true
-light2.shadow.mapSize.width = 1024
-light2.shadow.mapSize.height = 1024
-light2.shadow.camera.near = 0.5
-light2.shadow.camera.far = 20
-scene.add(light2)
+const light2 = new THREE.SpotLight(0xffffff, 100);
+light2.position.set(-2.5, 5, 5);
+light2.angle = Math.PI / 4;
+light2.penumbra = 0.5;
+light2.castShadow = true;
+light2.shadow.mapSize.width = 1024;
+light2.shadow.mapSize.height = 1024;
+light2.shadow.camera.near = 0.5;
+light2.shadow.camera.far = 20;
+scene.add(light2);
 
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
@@ -67,29 +67,6 @@ const planeBody = new CANNON.Body({ mass: 0 });
 planeBody.addShape(planeShape);
 planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 world.addBody(planeBody);
-
-// Variable to track if the cube is in contact with the ground
-let isTouchingGround = false;
-
-// Set up collision detection
-vehicleBody.addEventListener('collide', (event) => {
-    if (event.body === planeBody) {
-        isTouchingGround = true; // Cube is touching the ground
-        vehicleMesh.material.color.set(0x00ff00); // Change color to green when touching the ground
-    }
-});
-
-// When the cube stops colliding, make it blue again
-vehicleBody.addEventListener('collideend', (event) => {
-
-    console.log("collideend")
-
-
-    if (event.body === planeBody) {
-        isTouchingGround = false; // Cube is no longer touching the ground
-        vehicleMesh.material.color.set(0x0000ff); // Change color back to blue
-    }
-});
 
 // Set up controls (WASD)
 let controls = { forward: false, backward: false, left: false, right: false };
@@ -143,6 +120,38 @@ ctx.fillStyle = 'white';
 const clock = new THREE.Clock();
 let delta;
 
+// Flag to track if the vehicle is touching the ground
+let isTouchingGround = false;
+
+// PostStep event to detect contact with the ground
+world.addEventListener('postStep', function () {
+    let isContact = false;
+
+    // Check if any contacts exist between the vehicle and the ground
+    world.contacts.forEach(function (contact) {
+        if (contact.bi === vehicleBody && contact.bj === planeBody || contact.bi === planeBody && contact.bj === vehicleBody) {
+            // console.log('Contact detected!');
+
+            isContact = true;
+        }
+    });
+
+    // Change color based on contact
+    if (isContact) {
+        if (!isTouchingGround) {
+            // Vehicle starts touching the ground, change color to green
+            vehicleMesh.material.color.set(0x00ff00);  // Green
+            isTouchingGround = true;
+        }
+    } else {
+        if (isTouchingGround) {
+            // Vehicle stops touching the ground, change color back to blue
+            vehicleMesh.material.color.set(0x0000ff);  // Blue
+            isTouchingGround = false;
+        }
+    }
+});
+
 // Set up the animation loop
 function animate() {
     requestAnimationFrame(animate);
@@ -164,12 +173,6 @@ function animate() {
     // Smoothly interpolate camera position towards target position
     camera.position.lerp(targetPosition, cameraSmoothness);
     camera.lookAt(vehicleMesh.position);
-
-    // Clear the canvas and render the positions of the objects
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Render positions for debug
-    ctx.fillText(`Vehicle Position: (${vehicleMesh.position.x.toFixed(2)}, ${vehicleMesh.position.y.toFixed(2)}, ${vehicleMesh.position.z.toFixed(2)})`, 10, 30);
 
     // Render the scene
     renderer.render(scene, camera);
