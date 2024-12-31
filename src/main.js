@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // Set up scene, camera, and renderer
 const scene = new THREE.Scene();
@@ -9,7 +10,7 @@ document.body.appendChild(renderer.domElement);
 
 // Set up a basic ground plane
 const groundGeometry = new THREE.PlaneGeometry(500, 500);
-const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22, side: THREE.DoubleSide });
+const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x220000, side: THREE.DoubleSide });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = - Math.PI / 2; // Make it flat
 scene.add(ground);
@@ -114,9 +115,17 @@ addInstancedGrass();
 addParticleGrass();
 addLODGrass();
 
+// Set up OrbitControls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // Smooth camera movement
+controls.dampingFactor = 0.25;
+controls.screenSpacePanning = false; // Disable panning (optional)
+controls.maxPolarAngle = Math.PI / 2; // Restrict vertical movement (optional)
+
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
+    controls.update(); // Update the controls each frame
     renderer.render(scene, camera);
 }
 animate();
