@@ -89,24 +89,17 @@ function init() {
     });
 
     // Add event listener for keyboard input
-    window.addEventListener('keydown', (event) => {
-        if (event.key === 'd') { // Press 'f' to apply force
-            const force = new CANNON.Vec3(50, 0, 0); // Force vector (e.g., upward)
-            const point = new CANNON.Vec3(0.25, 0.25, 0.25); // Point of application
-
-            objects.forEach(({ body }) => {
-                body.applyForce(force, point);
-            });
-        }
-    });
+    const keyForceMap = {
+        'a': new CANNON.Vec3(-500, 0, 0), // Force along the negative x-axis
+        'd': new CANNON.Vec3(500, 0, 0),  // Force along the positive x-axis
+        'w': new CANNON.Vec3(0, 500, 0)   // Force upward
+    };
 
     window.addEventListener('keydown', (event) => {
-        if (event.key === 'w') { // Press 'f' to apply force
-            const force = new CANNON.Vec3(0, 50, 0); // Force vector (e.g., upward)
-            const point = new CANNON.Vec3(0.25, 0.25, 0.25); // Point of application
-
+        const force = keyForceMap[event.key];
+        if (force) {
             objects.forEach(({ body }) => {
-                body.applyForce(force, point);
+                body.applyForce(force, body.position); // Apply force at center
             });
         }
     });
