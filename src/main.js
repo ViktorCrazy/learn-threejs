@@ -71,7 +71,7 @@ function init() {
     const restitutionRange = { min: 0.0, max: 1.0 };      // Ranges for restitution
 
     // Generate random cube materials
-    const cubeMaterials = Array.from({ length: 200 }, () => generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange));
+    const cubeMaterials = Array.from({ length: 1000 }, () => generateRandomCubeMaterial(colorRange, frictionRange, restitutionRange));
 
     const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 
