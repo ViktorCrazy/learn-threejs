@@ -5,7 +5,7 @@ export class Vehicle {
         this.position = new Vector2(x, y);  // Vehicle position
         this.velocity = new Vector2(0, 0);  // Vehicle velocity (starts at rest)
         this.acceleration = 0;  // Current acceleration
-        this.angle = 0;  // Angle of the vehicle in degrees
+        this.angle = -90;  // Angle of the vehicle in degrees
         this.width = width;
         this.height = height;
         this.maxSpeed = maxSpeed;
@@ -18,15 +18,15 @@ export class Vehicle {
     update(gas, brake, turnLeft, turnRight) {
         // Handle acceleration and braking
         if (gas) {
-            this.acceleration += 0.05;  // Accelerate
+            this.acceleration += 0.0005;  // Accelerate
         }
         if (brake) {
-            this.acceleration -= 0.1;  // Brake
+            this.acceleration -= 0.0001;  // Brake
         }
 
         // Apply friction to slow down the vehicle
         this.acceleration *= this.friction;
-        if (Math.abs(this.acceleration) < 0.1) this.acceleration = 0;
+        if (Math.abs(this.acceleration) < 0.0001) this.acceleration = 0;
 
         // Limit the speed to the max speed
         if (this.velocity.length() > this.maxSpeed) {

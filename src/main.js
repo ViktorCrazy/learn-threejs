@@ -77,7 +77,7 @@ function animate() {
     vehicle.update(gas, brake, turnLeft, turnRight);
 
 
-    console.log(vehicle.position);
+    // console.log(vehicle.position);
 
 
     cube.position.set(vehicle.position.x, -5, vehicle.position.y);
