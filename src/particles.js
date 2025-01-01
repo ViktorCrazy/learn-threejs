@@ -6,6 +6,7 @@ let scene, camera, renderer;
 let particles, particleMaterial;
 let particleCount = 5000;
 let particleSystem;
+let time = 0; // To track time for gradual weakening
 
 function init() {
     // Create scene and camera
@@ -45,7 +46,9 @@ function createParticles() {
     for (let i = 0; i < particleCount; i++) {
         // Set random positions for the particles in a small area around the origin
         positions.push(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
-        velocities.push(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+
+        // Set initial velocities towards the downward direction (y-axis)
+        velocities.push(0, -Math.random() * 0.5, 0); // Initial downward velocity
     }
 
     // Add the positions and velocities as attributes
@@ -63,7 +66,7 @@ function animate() {
     let positions = particleSystem.geometry.attributes.position.array;
     let velocities = particleSystem.geometry.attributes.velocity.array;
 
-    // Update particles' position to simulate explosion
+    // Update particles' position to simulate downward falling
     for (let i = 0; i < particleCount; i++) {
         let index = i * 3;
 
@@ -72,14 +75,23 @@ function animate() {
         positions[index + 1] += velocities[index + 1];
         positions[index + 2] += velocities[index + 2];
 
-        // Apply random forces to simulate explosion effect
-        velocities[index] += (Math.random() - 0.5) * 0.05;
-        velocities[index + 1] += (Math.random() - 0.5) * 0.05;
-        velocities[index + 2] += (Math.random() - 0.5) * 0.05;
+        // Apply gravity: a constant force in the negative y-direction
+        velocities[index + 1] -= 0.01; // Simulating gravity effect (weak)
+
+        // Gradually decrease velocity to weaken the stream
+        velocities[index] *= 0.99; // Weakening effect in the x-direction
+        velocities[index + 1] *= 0.99; // Weakening effect in the y-direction
+        velocities[index + 2] *= 0.99; // Weakening effect in the z-direction
     }
 
     // Update the geometry to reflect the new positions
     particleSystem.geometry.attributes.position.needsUpdate = true;
+
+    // Gradually stop the particles
+    time += 0.01;
+    if (time > 10) { // After 10 seconds, stop the particles
+        particleMaterial.opacity = Math.max(0, particleMaterial.opacity - 0.01); // Fade particles out
+    }
 
     // Render the scene
     renderer.render(scene, camera);
