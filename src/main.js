@@ -25,7 +25,7 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     // Cube setup
-    const geometry = new THREE.BoxGeometry(1, 1, 1); // Cube dimensions
+    const geometry = new THREE.BoxGeometry(2, 1, 1); // Cube dimensions
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Cube color
     cube = new THREE.Mesh(geometry, material);
     cube.position.set(0, -5, 0); // Position cube at the bottom
@@ -81,6 +81,9 @@ function animate() {
 
 
     cube.position.set(vehicle.position.x, -5, vehicle.position.y);
+
+    const axis = new THREE.Vector3(0, 1, 0);  // Y-axis
+    cube.quaternion.setFromAxisAngle(axis, -vehicle.angle * Math.PI / 180);
 
     // Render the scene from the camera's perspective
     renderer.render(scene, camera);

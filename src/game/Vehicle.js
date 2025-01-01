@@ -1,7 +1,7 @@
 import { Vector2 } from "../math/Vector2";
 
 export class Vehicle {
-    constructor(x, y, width, height, maxSpeed = 5, turnRate = 3, friction = 0.98, drag = 0.99) {
+    constructor(x, y, width, height, maxSpeed = 5, turnRate = 3, friction = 0.98, drag = 0.95) {
         this.position = new Vector2(x, y);  // Vehicle position
         this.velocity = new Vector2(0, 0);  // Vehicle velocity (starts at rest)
         this.acceleration = 0;  // Current acceleration
@@ -18,10 +18,10 @@ export class Vehicle {
     update(gas, brake, turnLeft, turnRight) {
         // Handle acceleration and braking
         if (gas) {
-            this.acceleration += 0.0005;  // Accelerate
+            this.acceleration += 0.0003;  // Accelerate
         }
         if (brake) {
-            this.acceleration -= 0.0001;  // Brake
+            this.acceleration -= 0.0002;  // Brake
         }
 
         // Apply friction to slow down the vehicle
@@ -66,22 +66,5 @@ export class Vehicle {
             vehicleBounds.x + vehicleBounds.width > obstacleBounds.x &&
             vehicleBounds.y < obstacleBounds.y + obstacleBounds.height &&
             vehicleBounds.y + vehicleBounds.height > obstacleBounds.y;
-    }
-
-    // Update the camera to follow the vehicle smoothly
-    followCamera(camera) {
-        let cameraSpeed = 0.1;
-        camera.x += (this.position.x - camera.x) * cameraSpeed;
-        camera.y += (this.position.y - camera.y) * cameraSpeed;
-    }
-
-    // Render the vehicle (canvas drawing)
-    render(ctx) {
-        ctx.save();
-        ctx.translate(this.position.x, this.position.y);
-        ctx.rotate(this.angle * Math.PI / 180); // Rotate the vehicle based on its angle
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height); // Draw a rectangle (vehicle)
-        ctx.restore();
     }
 }
